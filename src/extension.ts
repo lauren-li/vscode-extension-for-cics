@@ -30,10 +30,15 @@ import { getShowLocalFileAttributesCommand } from "./commands/showLocalFileAttri
 import { getFilterTransactionCommand } from "./commands/filterTransactionCommand";
 import { getClearProgramFilterCommand } from "./commands/clearProgramFilterCommand";
 import { getFilterLocalFilesCommand } from "./commands/filterLocalFileCommand";
+import { ZoweVsCodeExtension } from "@zowe/zowe-explorer-api";
+import * as cics from "@zowe/cics-for-zowe-cli";
+import { ICommandProfileTypeConfiguration } from "@zowe/imperative";
 
 export async function activate(context: ExtensionContext) {
 
   if (ProfileManagement.apiDoesExist()) {
+    const zoweExplorerApi = ZoweVsCodeExtension.getZoweExplorerApi();
+      // the user does not have the CICS CLI Plugin installed and profiles created, yet.
     /**
      * This line will change when the profilesCache can take a new profile type to cache on refresh,
      * an addition planned for PI3.
@@ -41,11 +46,129 @@ export async function activate(context: ExtensionContext) {
      * - This will also stop profiles leaking into MVS tree
      * 
      */
-    ProfileManagement.getExplorerApis().registerMvsApi(new CicsApi());
+     // the user does not have the CICS CLI Plugin installed and profiles created, yet.
+  const meta: ICommandProfileTypeConfiguration[] = [
+    {
+        type: "cics",
+        schema: {
+            type: "object",
+            title: "CICS Profile",
+            description: "A cics profile is required to issue commands in the cics command group that interact with " +
+                "CICS regions. The cics profile contains your host, port, user name, and password " +
+                "for the IBM CICS management client interface (CMCI) server of your choice.",
+            properties: {
+                host: {
+                    type: "string",
+                    optionDefinition: {
+                        name: "host",
+                        aliases: ["H"],
+                        description: "The CMCI server host name",
+                        type: "string",
+                        required: true,
+                    },
+                },
+                port: {
+                    type: "number",
+                    optionDefinition: {
+                        name: "port",
+                        aliases: ["P"],
+                        description: "The CMCI server port",
+                        type: "number",
+                        defaultValue: 1490,
+                    },
+                },
+                user: {
+                    type: "string",
+                    secure: true,
+                    optionDefinition: {
+                        name: "user",
+                        aliases: ["u"],
+                        description: "Your username to connect to CICS",
+                        type: "string",
+                        implies: ["password"],
+                        required: true,
+                    },
+                },
+                password: {
+                    type: "string",
+                    secure: true,
+                    optionDefinition: {
+                        name: "password",
+                        aliases: ["p"],
+                        description: "Your password to connect to CICS",
+                        type: "string",
+                        implies: ["user"],
+                        required: true,
+                    },
+                },
+                regionName: {
+                    type: "string",
+                    optionDefinition: {
+                        name: "region-name",
+                        description: "The name of the CICS region name to interact with",
+                        type: "string"
+                    },
+                },
+                cicsPlex: {
+                    type: "string",
+                    optionDefinition: {
+                        name: "cics-plex",
+                        description: "The name of the CICSPlex to interact with",
+                        type: "string"
+                    },
+                },
+                rejectUnauthorized: {
+                    type: "boolean",
+                    optionDefinition: {
+                        name: "reject-unauthorized",
+                        aliases: ["ru"],
+                        description: "Reject self-signed certificates.",
+                        type: "boolean",
+                        defaultValue: true,
+                        required: false,
+                        group: "Cics Connection Options"
+                    }
+                },
+                protocol: {
+                    type: "string",
+                    optionDefinition: {
+                        name: "protocol",
+                        aliases: ["o"],
+                        description: "Specifies CMCI protocol (http or https).",
+                        type: "string",
+                        defaultValue: "https",
+                        required: true,
+                        allowableValues: { values: ["http", "https"], caseSensitive: false },
+                        group: "Cics Connection Options"
+                    }
+                }
+            },
+            required: ["host"],
+        },
+        createProfileExamples: [
+            {
+                options: "cics123 --host zos123 --port 1490 --user ibmuser --password myp4ss",
+                description: "Create a cics profile named 'cics123' to connect to CICS at host zos123 and port 1490"
+            }
+        ]
+    }
+];
+  await zoweExplorerApi.getExplorerExtenderApi().initForZowe("cics", meta);
+     const profilesCache = zoweExplorerApi.getExplorerExtenderApi().getProfilesCache();
+    // ProfileManagement.getExplorerApis().registerMvsApi(new CicsApi());
+
     /** */
-    await ProfileManagement.getExplorerApis().getExplorerExtenderApi().reloadProfiles();
+// Important that this method is called after initForZowe() to avoid an exception
+profilesCache.registerCustomProfilesType("cics");
+// Explicit reload is required as registering does not do it automatically
+await zoweExplorerApi.getExplorerExtenderApi().reloadProfiles();
+ // some examples for access the profiles loaded for cics from disk
+ const defaultCicsProfile = profilesCache.getDefaultProfile("cics");
+ const profileNames = await profilesCache.getNamesForType("cics");
+ const profileName = profilesCache.loadNamedProfile(profileNames[0]);
+
     window.showInformationMessage(
-      "Zowe Explorer was modified for the CICS Extension"
+      "Zowe Explorer was modified for the CICS Extension: " + profileName.name
     );
   }
 

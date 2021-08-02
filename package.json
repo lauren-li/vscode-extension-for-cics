@@ -269,7 +269,7 @@
     "@zowe/cics-for-zowe-cli": "^4.0.2",
     "@zowe/cli": "^6.30.0",
     "@zowe/imperative": "^4.8.1",
-    "@zowe/zowe-explorer-api": "PATH_TO_FILE",
+    "@zowe/zowe-explorer-api": "/Users/Lauren.Li@ibm.com/Desktop/Repositories/ze-monorepo/vscode-extension-for-zowe/dist/zowe-zowe-explorer-api-1.17.0.tgz",
     "axios": "^0.21.1",
     "vscode-nls": "^5.0.0",
     "xml-js": "^1.6.11"
