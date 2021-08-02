@@ -167,8 +167,8 @@ function activate(context) {
             // some examples for access the profiles loaded for cics from disk
             const defaultCicsProfile = profilesCache.getDefaultProfile("cics");
             const profileNames = yield profilesCache.getNamesForType("cics");
-            const profileName = profilesCache.loadNamedProfile(profileNames[0]);
-            vscode_1.window.showInformationMessage("Zowe Explorer was modified for the CICS Extension: " + profileName.name);
+            const profileName = profilesCache.loadNamedProfile(profileNames[0]).name;
+            vscode_1.window.showInformationMessage("Zowe Explorer was modified for the CICS Extension: " + profileName);
         }
         const treeDataProv = new CICSTree_1.CICSTree();
         vscode_1.window

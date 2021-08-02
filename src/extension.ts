@@ -165,10 +165,10 @@ await zoweExplorerApi.getExplorerExtenderApi().reloadProfiles();
  // some examples for access the profiles loaded for cics from disk
  const defaultCicsProfile = profilesCache.getDefaultProfile("cics");
  const profileNames = await profilesCache.getNamesForType("cics");
- const profileName = profilesCache.loadNamedProfile(profileNames[0]);
+ const profileName = profilesCache.loadNamedProfile(profileNames[0]).name;
 
     window.showInformationMessage(
-      "Zowe Explorer was modified for the CICS Extension: " + profileName.name
+      "Zowe Explorer was modified for the CICS Extension: " + profileName
     );
   }
 
